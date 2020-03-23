@@ -10,13 +10,29 @@ public class Processor{
 
     }
     
-    public void readMemory() {
+    private void readMemory() {
     	while(true){
             if (memory[PC].OPCode == "STOP") break;
             
             PC++;
         }
     }
+    
+    public void runProgram1() {
+    	
+    }
+    
+	public void runProgram2() {
+	    	
+	    }
+	
+	public void runProgram3() {
+		
+	}
+	
+	public void runProgram4() {
+		
+	}
     
 }
  
