@@ -28,10 +28,10 @@ public class Shell {
 			System.out.print("> ");
 			String p = s.next();
 			switch(p) {
-			case "fibonacci-10":	cpu.runProgram1(); break;
-			case "fibonacci-n": 	cpu.runProgram2(); break;  
-			case "fatorial": 	cpu.runProgram3(); break;
-			case "bubblesort": 	cpu.runProgram4(); break;
+			case "fibonacci-10":	cpu.runFibonacci10(); break;
+			case "fibonacci-n": 	cpu.runFibonacciN(); break;  
+			case "fatorial": 	cpu.runFatorial(); break;
+			case "bubblesort": 	cpu.runBubbleSort(); break;
 			case "close":
 				closed = true;
 				System.out.println("Good bye.");
