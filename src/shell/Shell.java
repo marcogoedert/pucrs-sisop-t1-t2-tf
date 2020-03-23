@@ -8,34 +8,41 @@ public class Shell {
 		
 		Scanner s = new Scanner(System.in);
 		Processor cpu = new Processor();
+		boolean closed = false;
 		
 		System.out.println("╔══════════════════════════════════════╗");
 		System.out.println("║            Virtual Machine           ║");
 		System.out.println("║                                      ║");
 		System.out.println("║ Programs:                            ║");
 		System.out.println("║                                      ║");
-		System.out.println("║  - fibonacci_10                      ║");
-		System.out.println("║  - fibonnaci_n                       ║");
+		System.out.println("║  - fibonacci-10                      ║");
+		System.out.println("║  - fibonacci-n                       ║");
 		System.out.println("║  - fatorial                          ║");
 		System.out.println("║  - bubblesort                        ║");
 		System.out.println("║  - close                             ║");
 		System.out.println("║                                      ║");
 		System.out.println("╚══════════════════════════════════════╝");
-		System.out.print("Tip: write the name of the program to run it.");
+		System.out.println("Tip: write the name of the program to run it.");
 		
-		while(true) {
+		while(!closed) {
 			System.out.print("> ");
 			String p = s.next();
 			switch(p) {
-			case "fibonacci_10": cpu.runProgram1();
-			case "fibonnaci_n": cpu.runProgram2();
-			case "fatorial": cpu.runProgram3();
-			case "bubblesort": cpu.runProgram4();
-			case "close": break;
-			default: System.err.println("Choose an existing program!");
+			case "fibonacci-10":	cpu.runProgram1(); break;
+			case "fibonacci-n": 	cpu.runProgram2(); break;  
+			case "fatorial": 	cpu.runProgram3(); break;
+			case "bubblesort": 	cpu.runProgram4(); break;
+			case "close":
+				closed = true;
+				System.out.println("Good bye.");
+				break;
+			default: 
+				//System.out.println(s);
+				System.err.print("Choose an existing program!\n");
+				//System.out.print("> ");
 			}
-			s.close();
-		}
-		
+			s.nextLine();
+		}		
+		s.close();
 	}
 }
