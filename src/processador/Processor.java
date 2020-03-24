@@ -5,7 +5,7 @@ import programs.Program;
 public class Processor{
 
 	private static final int TAM = 1024;
-	private static Position memory[] = new Position[TAM]; // 1024 posições de memória
+	private static Position memory[] = new Position[TAM]; // 1024 posicoes de memoria
 	private static int[] regs = new int[8];	// registradores
 	private static int PC = 0;		// program counter
 	//private Map<String, Runnable> operations = new HashMap<>();  nao vai rolar
@@ -20,8 +20,13 @@ public class Processor{
 		// to-do...
 		Position p[] = new Program().fibonacci10();
 		loadMemory(p);
+		
 		// print assembly code
 		Arrays.stream(p).forEach(line -> System.out.println(line.toString()));
+
+		//print registers
+		for(int i=0; i<regs.length; i++)
+			System.out.println("r" + i + ": " + regs[i]);
 	}
 
 	public void runFibonacciN()
