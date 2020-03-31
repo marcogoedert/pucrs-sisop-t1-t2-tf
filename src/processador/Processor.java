@@ -27,6 +27,8 @@ public class Processor{
 		//print registers
 		for(int i=0; i<regs.length; i++)
 			System.out.println("r" + i + ": " + regs[i]);
+
+		printMemory(50,60);
 	}
 
 	public void runFibonacciN()
@@ -140,29 +142,40 @@ public class Processor{
 		}
 	}
 
-	private void JMP(int n)
-	{
-		// to-do...
+	public void JMP(int k){
+        PC = k;
+    }
+
+    public void JMPI(String Rs){
+        int aux = getRegistrador(Rs);
+        PC = regs[aux];
+    }
+
+    public void JMPIG(String Rs, String Rc){
+        int aux1 = getRegistrador(Rc);
+        int aux2 = getRegistrador(Rs);
+
+        if (regs[aux1] > 0){
+            PC = regs[aux2];
+        }
+    }
+
+    public void JMPIL(String Rs, String Rc){
+        int aux1 = getRegistrador(Rc);
+        int aux2 = getRegistrador(Rs);
+
+        if (regs[aux1] < 0){
+            PC = regs[aux2];
+        }
 	}
 	
-	private void JMPI(String Rs)
-	{
-		// to-do...
-	}
-	
-	private void JMPIG(String Rs, String Rc)
-	{
-		// to-do...
-	}
-	
-	private void JMPIL(String Rs, String Rc)
-	{
-		// to-do...
-	}
-	
-	private void JMPIE(String Rs, String Rc)
-	{
-		// to-do...
+	public void JMPIE(String Rs, String Rc){
+        int aux1 = getRegistrador(Rc);
+        int aux2 = getRegistrador(Rs);
+
+        if (regs[aux1] == 0){
+            PC = regs[aux2];
+        }
 	}
 	
 	public void ADDI(String Rd, int k)
@@ -189,9 +202,9 @@ public class Processor{
 	}
 	
 	private void STD(int n, String Rs)
-	{
-		// to-do...
-	}
+    {
+        memory[n] = new Position(regs[getRegistrador(Rs)]);
+    }
 
 	public void ADD(String Rd, String Rs)
 	{
@@ -220,13 +233,21 @@ public class Processor{
 	}
 	
 	private void STX(String Rd, String Rs)
-	{
-		// to-do...
-	}
+    {
+        int aux_d = getRegistrador(Rd);
+        int aux_s = getRegistrador(Rs);
+        memory[regs[aux_d]] = new Position(regs[aux_s]);
+    }
 	
 	private void SWAP(String Rd, String Rs)
 	{
 		// to-do...
 	}
+
+	public void printMemory(int pos1, int pos2) {
+        for (int i = pos1; i < pos2; i++) {
+            System.out.println("M["+i+"]: "+memory[i]);
+        }
+    }
 
 }
