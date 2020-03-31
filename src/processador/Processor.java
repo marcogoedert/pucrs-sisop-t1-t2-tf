@@ -19,37 +19,21 @@ public class Processor{
 	{
 		Position p[] = new Program().fibonacci10();
 		loadMemory(p);
-		
-		// print assembly code
-		//Arrays.stream(p).forEach(line -> System.out.println(line.toString()));
-
-		/*print registers
-		for(int i=0; i<regs.length; i++)
-			System.out.println("r" + i + ": " + regs[i]);
-		*/
-
-		//printMemory(50,60);
+		memoryToString();
 	}
 
 	public void runFibonacciN()
 	{
 		Position p[] = new Program().fibonaccin();
 		loadMemory(p);
-		
-		// print assembly code
-		//Arrays.stream(p).forEach(line -> System.out.println(line.toString()));
-
-		/*print registers
-		for(int i=0; i<regs.length; i++)
-			System.out.println("r" + i + ": " + regs[i]);
-		*/
-		//printMemory(50,70);
+		memoryToString();
 	}	
 	
 	public void runFatorial()
 	{
 		Position p[] = new Program().fatorial();
 		loadMemory(p);
+		memoryToString();
 	}
 	
 	public void runBubbleSort()
@@ -243,7 +227,9 @@ public class Processor{
 	
 	private void LDX(String Rd, String Rs)
 	{
-		// to-do...
+		int aux_d = getRegistrador(Rd);
+		int aux_s = getRegistrador(Rs);
+		regs[aux_d] = memory[regs[aux_s]].num;
 	}
 	
 	private void STX(String Rd, String Rs)
@@ -255,7 +241,8 @@ public class Processor{
 	
 	private void SWAP(String Rd, String Rs)
 	{
-		// to-do...
+		// Rd7 <- Rd3, Rd6 <- Rd2,
+		// Rd5 <- Rd1, Rd4 <- Rd0
 	}
 
 	public void printRegs()
