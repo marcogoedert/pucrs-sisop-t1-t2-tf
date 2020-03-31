@@ -19,12 +19,14 @@ public class Shell {
 		System.out.println("║  - fibonacci-n                       ║");
 		System.out.println("║  - fatorial                          ║");
 		System.out.println("║  - bubblesort                        ║");
+		System.out.println("║  - print-memory                      ║");
 		System.out.println("║  - close                             ║");
 		System.out.println("║                                      ║");
 		System.out.println("╚══════════════════════════════════════╝");
-		System.out.println("Tip: write the name of the program to run it.");
+		System.out.println("Tip: write the name of the program to run it. write '-m' to print memory.");
 		
-		while(!closed) {
+		while(!closed) 
+		{
 			System.out.print("> ");
 			String p = s.next();
 			switch(p) {
@@ -32,14 +34,13 @@ public class Shell {
 			case "fibonacci-n": 	cpu.runFibonacciN(); break;  
 			case "fatorial": 	cpu.runFatorial(); break;
 			case "bubblesort": 	cpu.runBubbleSort(); break;
+			case "print-memory": cpu.memoryToString(); break;
 			case "close":
 				closed = true;
 				System.out.println("Good bye.");
 				break;
 			default: 
-				//System.out.println(s);
 				System.err.print("Choose an existing program!\n");
-				//System.out.print("> ");
 			}
 			s.nextLine();
 		}		

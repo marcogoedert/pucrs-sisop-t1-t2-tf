@@ -25,7 +25,7 @@ public class Program {
 	};
 
 	private static Position[] program2 = new Position[] {
-		new Position("LDI", "r4", 15), 	//0 - Insere valor fibonacci
+		new Position("LDI", "r4", 20), 		//0 - Insere valor fibonacci
 		new Position("LDI", "r5", 23),		//1
 		new Position("JMPIL", "r5", "r4"),	//2
 		new Position("STD", 49, "r4"), 		//3
@@ -50,9 +50,26 @@ public class Program {
 		new Position("LDI", "r4", -1),		//22
 		new Position("STD", 50, "r4"),		//23
 		new Position("STOP")				//24
-	   };
+	};
+	
+	private static Position[] program3 = new Position[] {
+		new Position("LDI", "r0", -5), 		//0 - Insere valor fatorial 		
+		new Position("LDI", "r5", 11), // load posição stop em r5
+		new Position("JMPIL", "r5", "r0"), // if r0<0 	pc = r5
+		new Position("LDI", "r6", 6),
+		new Position("LDI", "r1", 0),
+		new Position("ADD", "r1", "r0"), //r1 = r0
+		new Position("SUBI", "r1", 1), //r1--
+		new Position("MULT", "r0", "r1"), //r0 = r0*r1
+		new Position("SUBI", "r1", 1), // r1--
+		new Position("JMPIG", "r6", "r1"), //if r1>0 	pc= r6
+		new Position("STD", 50, "r0"),
+		new Position("STOP"),
+		new Position("LDI", "r0", -1),
+		new Position("STD", 50, "r0"),
+		new Position("STOP")
+	};
 
-	private static Position[] program3 = null;
 	private static Position[] program4 = null;
 	
 	public Program() {

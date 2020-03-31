@@ -28,7 +28,7 @@ public class Processor{
 			System.out.println("r" + i + ": " + regs[i]);
 		*/
 
-		printMemory(50,60);
+		//printMemory(50,60);
 	}
 
 	public void runFibonacciN()
@@ -43,12 +43,13 @@ public class Processor{
 		for(int i=0; i<regs.length; i++)
 			System.out.println("r" + i + ": " + regs[i]);
 		*/
-		printMemory(50,70);
+		//printMemory(50,70);
 	}	
 	
 	public void runFatorial()
 	{
-		// to-do...
+		Position p[] = new Program().fatorial();
+		loadMemory(p);
 	}
 	
 	public void runBubbleSort()
@@ -122,7 +123,9 @@ public class Processor{
 				System.err.println("Invalid Operation: " + pos.label);
 				System.exit(1);
 			}
+			// DEBUG START
 			printRegs();
+			// DEBUG FINISH
 			PC++;
 		}
 	}
@@ -270,10 +273,21 @@ public class Processor{
 		   System.out.println(sb.toString());
 	}
 
-	public void printMemory(int pos1, int pos2) {
-        for (int i = pos1; i <= pos2; i++) {
-            System.out.println("M["+i+"]: "+memory[i]);
-        }
+	public void memoryToString() {
+		StringBuilder sb = new StringBuilder("\n");
+		boolean prevIsNull = false;
+        for(int i = 0; i < memory.length; i++) {
+            if (memory[i] != null){
+				sb.append(i).append(".\t").append(memory[i].label).append("\n");
+				prevIsNull = false;
+			} else {
+				if (!prevIsNull) {
+					sb.append("...null...\n");
+					prevIsNull = true;
+				}				
+			}
+		}
+		System.out.println(sb.toString());
     }
 
 }
