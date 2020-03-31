@@ -53,24 +53,24 @@ public class Program {
 	};
 	
 	private static Position[] program3 = new Position[] {
-		new Position("LDI", "r0", -5), 		//0 - Insere valor fatorial 		
-		new Position("LDI", "r5", 11), // load posição stop em r5
-		new Position("JMPIL", "r5", "r0"), // if r0<0 	pc = r5
+		new Position("LDI", "r0", -5), 			
+		new Position("LDI", "r5", 11), 
+		new Position("JMPIL", "r5", "r0"), 
 		new Position("LDI", "r6", 6),
 		new Position("LDI", "r1", 0),
-		new Position("ADD", "r1", "r0"), //r1 = r0
-		new Position("SUBI", "r1", 1), //r1--
-		new Position("MULT", "r0", "r1"), //r0 = r0*r1
-		new Position("SUBI", "r1", 1), // r1--
-		new Position("JMPIG", "r6", "r1"), //if r1>0 	pc= r6
+		new Position("ADD", "r1", "r0"), 
+		new Position("SUBI", "r1", 1), 
+		new Position("MULT", "r0", "r1"), 
+		new Position("SUBI", "r1", 1), 
+		new Position("JMPIG", "r6", "r1"), 
 		new Position("STD", 50, "r0"),
 		new Position("STOP"),
 		new Position("LDI", "r0", -1),
 		new Position("STD", 50, "r0"),
 		new Position("STOP")
 	};
-
-	private static Position[] program4 = null;
+	
+	private static Position[] program4;
 	
 	public Program() {
 	

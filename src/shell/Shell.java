@@ -18,12 +18,11 @@ public class Shell {
 		System.out.println("║  - fibonacci-10                ║");
 		System.out.println("║  - fibonacci-n                 ║");
 		System.out.println("║  - fatorial                    ║");
-		System.out.println("║  - bubblesort                  ║");
+		System.out.println("║  - bubblesort (not working)    ║");
 		System.out.println("║  - print-memory                ║");
 		System.out.println("║  - close                       ║");
 		System.out.println("║                                ║");
 		System.out.println("╚════════════════════════════════╝");
-		System.out.println("Tip: write the name of the program to run it. write '-m' to print memory.");
 		
 		while(!closed) 
 		{

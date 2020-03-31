@@ -1,5 +1,5 @@
 package processador;
-//import java.util.Arrays;
+
 import programs.Program;
 
 public class Processor{
@@ -8,7 +8,6 @@ public class Processor{
 	private static Position memory[] = new Position[TAM]; // 1024 posicoes de memoria
 	private static int[] regs = new int[8];	// registradores
 	private static int PC = 0;		// program counter
-	//private Map<String, Runnable> operations = new HashMap<>();  nao vai rolar
 	
 	public Processor()
 	{
@@ -38,7 +37,9 @@ public class Processor{
 	
 	public void runBubbleSort()
 	{
-		// to-do...
+		Position p[] = new Program().bubblesort();
+		loadMemory(p);
+		memoryToString();
 	}
 	
 	private void readMemory()
@@ -125,7 +126,6 @@ public class Processor{
 	
 	private static int getRegistrador(String registrador)
 	{
-		
 		switch(registrador)
 		{
 		case "r0": return 0;
@@ -142,7 +142,7 @@ public class Processor{
 
 	public void JMP(int k){
         PC = k;
-    }
+	}
 
     public void JMPI(String Rs){
         int aux = getRegistrador(Rs);
