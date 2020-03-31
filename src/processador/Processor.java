@@ -1,5 +1,5 @@
 package processador;
-import java.util.Arrays;
+//import java.util.Arrays;
 import programs.Program;
 
 public class Processor{
@@ -17,30 +17,40 @@ public class Processor{
 
 	public void runFibonacci10()
 	{
-		// to-do...
 		Position p[] = new Program().fibonacci10();
 		loadMemory(p);
 		
 		// print assembly code
-		Arrays.stream(p).forEach(line -> System.out.println(line.toString()));
+		//Arrays.stream(p).forEach(line -> System.out.println(line.toString()));
 
-		//print registers
+		/*print registers
 		for(int i=0; i<regs.length; i++)
 			System.out.println("r" + i + ": " + regs[i]);
+		*/
 
 		printMemory(50,60);
 	}
 
 	public void runFibonacciN()
 	{
-		// to-do...
-	}	
+		Position p[] = new Program().fibonaccin();
+		loadMemory(p);
+		
+		// print assembly code
+		//Arrays.stream(p).forEach(line -> System.out.println(line.toString()));
 
+		/*print registers
+		for(int i=0; i<regs.length; i++)
+			System.out.println("r" + i + ": " + regs[i]);
+		*/
+		printMemory(50,70);
+	}	
+	
 	public void runFatorial()
 	{
 		// to-do...
 	}
-
+	
 	public void runBubbleSort()
 	{
 		// to-do...
@@ -112,6 +122,7 @@ public class Processor{
 				System.err.println("Invalid Operation: " + pos.label);
 				System.exit(1);
 			}
+			printRegs();
 			PC++;
 		}
 	}
@@ -198,7 +209,7 @@ public class Processor{
 	
 	private void LDD(String Rd, int n)
 	{
-		// to-do...
+		regs[getRegistrador(Rd)] = memory[n].num;
 	}
 	
 	private void STD(int n, String Rs)
@@ -244,8 +255,23 @@ public class Processor{
 		// to-do...
 	}
 
+	public void printRegs()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("R0: ").append(regs[0]).
+		   append("\tR1: ").append(regs[1]).
+		   append("\tR2: ").append(regs[2]).
+		   append("\tR3: ").append(regs[3]).
+		   append("\tR4: ").append(regs[4]).
+		   append("\tR5: ").append(regs[5]).
+		   append("\tR6: ").append(regs[6]).
+		   append("\tR7: ").append(regs[7]);
+
+		   System.out.println(sb.toString());
+	}
+
 	public void printMemory(int pos1, int pos2) {
-        for (int i = pos1; i < pos2; i++) {
+        for (int i = pos1; i <= pos2; i++) {
             System.out.println("M["+i+"]: "+memory[i]);
         }
     }
