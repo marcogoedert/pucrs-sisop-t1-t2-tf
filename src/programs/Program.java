@@ -53,7 +53,7 @@ public class Program {
 	};
 	
 	private static Position[] program3 = new Position[] {
-		new Position("LDI", "r0", -5), 			
+		new Position("LDI", "r0", 5), 			
 		new Position("LDI", "r5", 11), 
 		new Position("JMPIL", "r5", "r0"), 
 		new Position("LDI", "r6", 6),
