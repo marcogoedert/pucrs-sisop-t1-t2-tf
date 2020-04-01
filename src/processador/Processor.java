@@ -37,9 +37,11 @@ public class Processor{
 	
 	public void runBubbleSort()
 	{
+		/*
 		Position p[] = new Program().bubblesort();
 		loadMemory(p);
 		memoryToString();
+		*/
 	}
 	
 	private void readMemory()
