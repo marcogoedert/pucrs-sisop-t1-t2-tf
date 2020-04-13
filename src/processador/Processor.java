@@ -179,7 +179,8 @@ public class Processor{
 			LDD(pos.r1, pos.num);
 			break;
 		case "STD":
-			STD(pos.num, pos.r2);
+		    int num = pos.num + process.getPartition().getPos0();
+			STD(num, pos.r2);
 			break;
 		case "ADD":
 			ADD(pos.r1, pos.r2);
