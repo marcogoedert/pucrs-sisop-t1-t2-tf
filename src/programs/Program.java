@@ -21,7 +21,7 @@ public class Program {
 		new Position("ADDI", "r0", 1),
 		new Position("SUB", "r7", "r0"),
 		new Position("JMPIG", "r6", "r7"),
-		new Position("STOP"),
+		new Position("STOP")
 	};
 
 	private static Position[] program2 = new Position[] {

@@ -1,129 +1,177 @@
 package processador;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
+import memoria.MemoryManager;
+import memoria.MemoryManager.*;
 import programs.Program;
 
 public class Processor{
 
-	private static final int TAM = 1024;
-	private static Position memory[] = new Position[TAM]; // 1024 posicoes de memoria
-	private static int[] regs = new int[8];	// registradores
-	private static int PC = 0;		// program counter
-	
+	private MemoryManager MM = new MemoryManager();
+	private Queue<Process> processes = new LinkedList<Process>();
+
+	public class Process
+	{
+		// Process Control Block
+		int id, PC = 0;
+		int[] regs = new int[8];
+		boolean executing = true;
+		Partition partition = null;
+
+		public Process(int id, Position p[])
+		{
+			this.id = id;
+			partition = MM.alocar(p);
+		}
+
+		public String regsToString()
+		{
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("R0: ").append(regs[0]).
+			 append("\tR1: ").append(regs[1]).
+			 append("\tR2: ").append(regs[2]).
+			 append("\tR3: ").append(regs[3]).
+			 append("\tR4: ").append(regs[4]).
+			 append("\tR5: ").append(regs[5]).
+			 append("\tR6: ").append(regs[6]).
+			 append("\tR7: ").append(regs[7]);
+
+			return sb.toString();
+		}
+
+		@Override
+		public String toString(){
+			StringBuilder sb = new StringBuilder("PCB Id: ").append(this.id).
+										  append("\tExecuting: ").append(this.executing).
+										  append("\n").append(this.partition.toString()).
+										  append("\n").append(this.regsToString());
+			return sb.toString();
+		}
+	}
+
 	public Processor()
 	{
 		
 	}
 
+	public void main(){
+		//DEBUG START
+		System.out.println("Entrei na main!\tProcessos na fila: " + processes.size());
+		//DEBUG FINISH
+		int timeSlice = 20;
+		while(!processes.isEmpty()){
+			Process p = processes.peek();
+			//DEBUG START
+			System.out.println(p.toString());
+			//DEBUG FINISH
+			for(int i = 0; i < timeSlice; i++)
+			{
+				readInstruction(p);
+				if (!p.executing)
+					break;
+			}
+
+			if(p.executing)
+				processes.add(processes.poll());
+			else
+				processes.remove();
+		}
+	}
+
 	public void runFibonacci10()
 	{
-		Position p[] = new Program().fibonacci10();
-		loadMemory(p);
-		memoryToString();
+		int id = processes.size();
+		Position program[] = new Program().fibonacci10();
+		Process process = new Process(id, program);
+		processes.add(process);
 	}
 
 	public void runFibonacciN()
 	{
-		Position p[] = new Program().fibonaccin();
-		loadMemory(p);
-		memoryToString();
+		int id = processes.size();
+		Position program[] = new Program().fibonaccin();
+		Process process = new Process(id, program);
+		processes.add(process);
 	}	
 	
 	public void runFatorial()
 	{
-		Position p[] = new Program().fatorial();
-		loadMemory(p);
-		memoryToString();
+		int id = processes.size();
+		Position program[] = new Program().fatorial();
+		Process process = new Process(id, program);
+		processes.add(process);
 	}
 	
 	public void runBubbleSort()
 	{
-		/*
-		Position p[] = new Program().bubblesort();
-		loadMemory(p);
-		memoryToString();
-		*/
 	}
 	
-	private void readMemory()
+	private void readInstruction(Process process)
 	{		
-		boolean stopped = false;
+		int posAbs = process.PC + process.partition.getPos0(); // PosAbs = PosRel + Part.Pos0 
+		Position pos = MM.getPosition(posAbs); 
 		
-		while(!stopped)
-		{	
-			if (PC >= memory.length) break;
-			
-			Position pos = memory[PC];
-			switch(memory[PC].OPCode) 
-			{			
-			case "STOP":
-				stopped = true;
-				break;
-			case "JMP":
-				JMP(pos.num);
-				break;
-			case "JMPI":
-				JMPI(pos.r1);
-				break;
-			case "JMPIG":
-				JMPIG(pos.r1, pos.r2);
-				break;
-			case "JMPIL":
-				JMPIL(pos.r1, pos.r2);
-				break;
-			case "JMPIE":
-				JMPIE(pos.r1, pos.r2);
-				break;
-			case "ADDI":
-				ADDI(pos.r1, pos.num);
-				break;
-			case "SUBI":
-				SUBI(pos.r1, pos.num);
-				break;
-			case "LDI":
-				LDI(pos.r1, pos.num);
-				break;
-			case "LDD":
-				LDD(pos.r1, pos.num);
-				break;
-			case "STD":
-				STD(pos.num, pos.r2);
-				break;
-			case "ADD":
-				ADD(pos.r1, pos.r2);
-				break;
-			case "SUB":
-				SUB(pos.r1, pos.r2);
-				break;
-			case "MULT":
-				MULT(pos.r1, pos.r2);
-				break;
-			case "LDX":
-				LDX(pos.r1, pos.r2);
-				break;
-			case "STX":
-				STX(pos.r1, pos.r2);
-				break;
-			case "SWAP":
-				SWAP(pos.r1, pos.r2);
-				break;
-			default:
-				System.err.println("Invalid Operation: " + pos.label);
-				System.exit(1);
-			}
-			// DEBUG START
-			printRegs();
-			// DEBUG FINISH
-			PC++;
+		switch(pos.OPCode) 
+		{			
+		case "STOP":
+			process.executing = false;
+			break;
+		case "JMP":
+			JMP(pos.num);
+			break;
+		case "JMPI":
+			JMPI(pos.r1);
+			break;
+		case "JMPIG":
+			JMPIG(pos.r1, pos.r2);
+			break;
+		case "JMPIL":
+			JMPIL(pos.r1, pos.r2);
+			break;
+		case "JMPIE":
+			JMPIE(pos.r1, pos.r2);
+			break;
+		case "ADDI":
+			ADDI(pos.r1, pos.num);
+			break;
+		case "SUBI":
+			SUBI(pos.r1, pos.num);
+			break;
+		case "LDI":
+			LDI(pos.r1, pos.num);
+			break;
+		case "LDD":
+			LDD(pos.r1, pos.num);
+			break;
+		case "STD":
+			STD(pos.num, pos.r2);
+			break;
+		case "ADD":
+			ADD(pos.r1, pos.r2);
+			break;
+		case "SUB":
+			SUB(pos.r1, pos.r2);
+			break;
+		case "MULT":
+			MULT(pos.r1, pos.r2);
+			break;
+		case "LDX":
+			LDX(pos.r1, pos.r2);
+			break;
+		case "STX":
+			STX(pos.r1, pos.r2);
+			break;
+		case "SWAP":
+			SWAP(pos.r1, pos.r2);
+			break;
+		default:
+			System.err.println("Invalid Operation: " + pos.label);
+			System.exit(1);
 		}
-	}
-
-	private void loadMemory(Position[] p)
-	{
-		PC = 0;									// Reset PC and memory
-		memory = new Position[TAM];
-		for(int i = 0; i < p.length; i++) 		// Load program into memory
-			memory[i] = p[i];
-		readMemory();							// Read loaded program
+		process.PC++;
 	}
 	
 	private static int getRegistrador(String registrador)
@@ -143,20 +191,20 @@ public class Processor{
 	}
 
 	public void JMP(int k){
-        PC = k;
+        processes.peek().PC = k;
 	}
 
     public void JMPI(String Rs){
         int aux = getRegistrador(Rs);
-        PC = regs[aux];
+        processes.peek().PC = processes.peek().regs[aux];
     }
 
     public void JMPIG(String Rs, String Rc){
         int aux1 = getRegistrador(Rc);
         int aux2 = getRegistrador(Rs);
 
-        if (regs[aux1] > 0){
-            PC = regs[aux2];
+        if (processes.peek().regs[aux1] > 0){
+            processes.peek().PC = processes.peek().regs[aux2];
         }
     }
 
@@ -164,8 +212,8 @@ public class Processor{
         int aux1 = getRegistrador(Rc);
         int aux2 = getRegistrador(Rs);
 
-        if (regs[aux1] < 0){
-            PC = regs[aux2];
+        if (processes.peek().regs[aux1] < 0){
+            processes.peek().PC = processes.peek().regs[aux2];
         }
 	}
 	
@@ -173,72 +221,72 @@ public class Processor{
         int aux1 = getRegistrador(Rc);
         int aux2 = getRegistrador(Rs);
 
-        if (regs[aux1] == 0){
-            PC = regs[aux2];
+        if (processes.peek().regs[aux1] == 0){
+            processes.peek().PC = processes.peek().regs[aux2];
         }
 	}
 	
 	public void ADDI(String Rd, int k)
 	{
 		int aux = getRegistrador(Rd);
-		regs[aux] += k;
+		processes.peek().regs[aux] += k;
 	}
 
 	public void SUBI(String Rd, int k)
 	{
 		int aux = getRegistrador(Rd);
-		regs[aux] -= k;
+		processes.peek().regs[aux] -= k;
 	}
 
 	public void LDI(String Rd, int k) 
 	{
 		int aux = getRegistrador(Rd);
-		regs[aux] = k;
+		processes.peek().regs[aux] = k;
 	}
 	
 	private void LDD(String Rd, int n)
 	{
-		regs[getRegistrador(Rd)] = memory[n].num;
+		processes.peek().regs[getRegistrador(Rd)] = MM.getPosition(n).num;
 	}
 	
 	private void STD(int n, String Rs)
     {
-        memory[n] = new Position(regs[getRegistrador(Rs)]);
+		MM.setPosition(n, new Position(processes.peek().regs[getRegistrador(Rs)]));
     }
 
 	public void ADD(String Rd, String Rs)
 	{
 		int aux_d = getRegistrador(Rd);
 		int aux_s = getRegistrador(Rs);
-		regs[aux_d] += regs[aux_s];
+		processes.peek().regs[aux_d] += processes.peek().regs[aux_s];
 	}
 
 	public void SUB(String Rd, String Rs)
 	{
 		int aux_d = getRegistrador(Rd);
 		int aux_s = getRegistrador(Rs);
-		regs[aux_d] -= regs[aux_s];
+		processes.peek().regs[aux_d] -= processes.peek().regs[aux_s];
 	}
 
 	public void MULT(String Rd, String Rs)
 	{
 		int aux_d = getRegistrador(Rd);
 		int aux_s = getRegistrador(Rs);
-		regs[aux_d] *= regs[aux_s];
+		processes.peek().regs[aux_d] *= processes.peek().regs[aux_s];
 	}
 	
 	private void LDX(String Rd, String Rs)
 	{
 		int aux_d = getRegistrador(Rd);
 		int aux_s = getRegistrador(Rs);
-		regs[aux_d] = memory[regs[aux_s]].num;
+		processes.peek().regs[aux_d] = MM.getPosition(processes.peek().regs[aux_s]).num;
 	}
 	
 	private void STX(String Rd, String Rs)
     {
         int aux_d = getRegistrador(Rd);
-        int aux_s = getRegistrador(Rs);
-        memory[regs[aux_d]] = new Position(regs[aux_s]);
+		int aux_s = getRegistrador(Rs);
+		MM.setPosition(processes.peek().regs[aux_d], new Position(processes.peek().regs[aux_s]));
     }
 	
 	private void SWAP(String Rd, String Rs)
@@ -246,37 +294,5 @@ public class Processor{
 		// Rd7 <- Rd3, Rd6 <- Rd2,
 		// Rd5 <- Rd1, Rd4 <- Rd0
 	}
-
-	public void printRegs()
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append("R0: ").append(regs[0]).
-		   append("\tR1: ").append(regs[1]).
-		   append("\tR2: ").append(regs[2]).
-		   append("\tR3: ").append(regs[3]).
-		   append("\tR4: ").append(regs[4]).
-		   append("\tR5: ").append(regs[5]).
-		   append("\tR6: ").append(regs[6]).
-		   append("\tR7: ").append(regs[7]);
-
-		   System.out.println(sb.toString());
-	}
-
-	public void memoryToString() {
-		StringBuilder sb = new StringBuilder("\n");
-		boolean prevIsNull = false;
-        for(int i = 0; i < memory.length; i++) {
-            if (memory[i] != null){
-				sb.append(i).append(".\t").append(memory[i].label).append("\n");
-				prevIsNull = false;
-			} else {
-				if (!prevIsNull) {
-					sb.append("...null...\n");
-					prevIsNull = true;
-				}				
-			}
-		}
-		System.out.println(sb.toString());
-    }
 
 }
