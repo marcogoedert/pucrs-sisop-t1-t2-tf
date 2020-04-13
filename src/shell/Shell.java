@@ -1,7 +1,6 @@
 package shell;
 
 import java.util.Scanner;
-
 import memoria.MemoryManager;
 import processador.Processor;
 
@@ -31,15 +30,18 @@ public class Shell {
 		while(!closed) 
 		{
 			System.out.print("> ");
-			String line = s.next();
+			String line = s.nextLine();
 			String arguments[] = line.split(" ");
-			for(int i = 0; i < arguments.length; i++){
-				switch(arguments[i]) {
+
+			for(int i = 0; i < arguments.length; i++)
+			{
+				switch(arguments[i]) 
+				{
 				case "1":	cpu.runFibonacci10();	break;
 				case "2": 	cpu.runFibonacciN(); 	break;  
 				case "3":	cpu.runFatorial(); 		break;
 				case "4":	cpu.runBubbleSort(); 	break;
-				case "5": 	System.out.println(MM.toString()); 	break;
+				case "5": 	System.out.println(MM.printByPartition()); 	break;
 				case "6":
 					closed = true;
 					System.out.println("Good bye.");
@@ -48,7 +50,7 @@ public class Shell {
 					System.err.print("Choose an existing program!\n");
 				}
 			}
-			s.nextLine();
+			//s.nextLine();
 			cpu.main();
 		}		
 		s.close();

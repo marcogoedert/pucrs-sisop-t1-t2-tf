@@ -18,8 +18,8 @@ public class MemoryManager {
     
     public class Partition{
 
-        int id, pos0, pos1;
-        boolean using = false;
+        private int id, pos0, pos1;
+        private boolean using = false;
 
         public Partition(int id, int pos0, int pos1){
             this.id = id;
@@ -27,8 +27,46 @@ public class MemoryManager {
             this.pos1 = pos1;
         }
 
-        public int getPos0(){
+        public int getId()
+        {
+            return this.id;
+        }
+
+        public int getPos0()
+        {
             return this.pos0;
+        }
+
+        public int getPos1()
+        {
+            return this.pos1;
+        }
+
+        public boolean isUsing()
+        {
+            return this.using;
+        }
+
+        public boolean isUsed()
+        {
+            return !(memory[this.pos0] == null);
+        }
+       
+        public String getPartitionData(){
+            StringBuilder sb = new StringBuilder();
+            boolean prevIsNull = false;
+            for(int i = pos0; i < pos1; i++) {
+                if (memory[i] != null){
+                    sb.append(i).append(".\t").append(memory[i].label).append("\n");
+                    prevIsNull = false;
+                } else {
+                    if (!prevIsNull) {
+                        sb.append("...null...\n");
+                        prevIsNull = true;
+                    }				
+                }
+            }
+            return sb.toString();
         }
 
         @Override
@@ -37,7 +75,8 @@ public class MemoryManager {
             StringBuilder sb = new StringBuilder("Partition Id: ").append(this.id).
                                           append("\tpos0: ").append(this.pos0).
                                           append("\tpos1: ").append(this.pos1).
-                                          append("\tusing: ").append(this.using);
+                                          append("\tusing: ").append(this.using).
+                                          append("\tused: ").append(this.isUsed()).append("\n");
             return sb.toString();
         }
 
@@ -51,6 +90,7 @@ public class MemoryManager {
         memory[n] = pos;        
     }
 
+    // Procura uma partição livre da memória, marca sua flag 'using' como true e a retorna.
     private Partition getPartition(){
         for(int i = 0; i < partitions.length; i++){
             Partition p = partitions[i];
@@ -63,23 +103,37 @@ public class MemoryManager {
         return null;
     }
 
-    // Aloca particao e adiciona programa na memoria partindo de part.pos0
+    // Pega uma particao e partindo de 'pos0' adiciona um programa
     public Partition alocar(Position[] program)
     {
-        Partition part = getPartition(); // aloca uma partição da memória
+        Partition partition = getPartition(); // aloca uma partição da memória
 
         // escreve programa no começo da partição
         for(int i = 0; i < program.length; i++) 		
-            memory[part.pos0] = program[i];
+            memory[partition.pos0+i] = program[i];
             
-        return part;
+        return partition;
     }
 
-    public void desalocar(Partition p){
-        for(int i=p.pos0; i<p.pos1; i++)
-            memory[i] = null;
+    public void desalocar(){
+        // Reseta memória
+        memory = new Position[TAM];
 
-        p.using = false;
+        // Reseta status de todas partições
+        for(int i=0; i<partitions.length; i++)
+            partitions[i].using = false;
+    }
+
+	public String printByPartition(){
+        StringBuilder sb = new StringBuilder("Memory by partitions:\n");
+
+		for(int i = 0; i < partitions.length; i++){
+            Partition p = partitions[i];
+            sb.append(p.toString());
+            if (p.isUsed())
+            	sb.append(p.getPartitionData());
+        }
+        return sb.toString();
     }
 
     @Override

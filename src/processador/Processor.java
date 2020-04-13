@@ -15,18 +15,23 @@ public class Processor{
 	public class Process
 	{
 		// Process Control Block
-		int id, PC = 0;
-		int[] regs = new int[8];
-		boolean executing = true;
-		Partition partition = null;
+		private int id, PC = 0;
+		private int[] regs = new int[8];
+		private boolean executing = true;
+		private Partition partition = null;
 
 		public Process(int id, Position p[])
 		{
 			this.id = id;
-			partition = MM.alocar(p);
+			this.partition = MM.alocar(p);
 		}
 
-		public String regsToString()
+		public int getId()
+		{
+            return this.id;
+		}
+
+		public String getRegs()
 		{
 			StringBuilder sb = new StringBuilder();
 
@@ -42,12 +47,20 @@ public class Processor{
 			return sb.toString();
 		}
 
+		public boolean isExecuting(){
+			return this.executing;
+		}
+
+		public Partition getPartition(){
+			return this.partition;
+		}
+
 		@Override
 		public String toString(){
 			StringBuilder sb = new StringBuilder("PCB Id: ").append(this.id).
 										  append("\tExecuting: ").append(this.executing).
 										  append("\n").append(this.partition.toString()).
-										  append("\n").append(this.regsToString());
+										  append(this.getRegs()).append("\n");
 			return sb.toString();
 		}
 	}
@@ -65,10 +78,13 @@ public class Processor{
 		while(!processes.isEmpty()){
 			Process p = processes.peek();
 			//DEBUG START
-			System.out.println(p.toString());
+			System.out.println("Executando processo: \n" + p.toString());
 			//DEBUG FINISH
 			for(int i = 0; i < timeSlice; i++)
 			{
+				//DEBUG START
+				System.out.println("timeSlice counter = "+i);
+				//DEBUG FINISH
 				readInstruction(p);
 				if (!p.executing)
 					break;
@@ -76,9 +92,11 @@ public class Processor{
 
 			if(p.executing)
 				processes.add(processes.poll());
-			else
+			else			
 				processes.remove();
 		}
+		System.out.println(MM.printByPartition());
+		MM.desalocar();
 	}
 
 	public void runFibonacci10()
@@ -87,6 +105,9 @@ public class Processor{
 		Position program[] = new Program().fibonacci10();
 		Process process = new Process(id, program);
 		processes.add(process);
+		//DEBUG START
+		System.out.println("Entrei em runFibonacci10!\n"+process.toString()+"\nProcesses length: "+processes.size()+"\n");
+		//DEBUG FINISH
 	}
 
 	public void runFibonacciN()
@@ -95,6 +116,9 @@ public class Processor{
 		Position program[] = new Program().fibonaccin();
 		Process process = new Process(id, program);
 		processes.add(process);
+		//DEBUG START
+		System.out.println("Entrei em runFibonacciN!\n"+process.toString()+"\nProcesses length: "+processes.size()+"\n");
+		//DEBUG FINISH
 	}	
 	
 	public void runFatorial()
@@ -103,6 +127,9 @@ public class Processor{
 		Position program[] = new Program().fatorial();
 		Process process = new Process(id, program);
 		processes.add(process);
+		//DEBUG START
+		System.out.println("Entrei em runFatorial!\n"+process.toString()+"\nProcesses length: "+processes.size()+"\n");
+		//DEBUG FINISH
 	}
 	
 	public void runBubbleSort()
@@ -111,8 +138,13 @@ public class Processor{
 	
 	private void readInstruction(Process process)
 	{		
-		int posAbs = process.PC + process.partition.getPos0(); // PosAbs = PosRel + Part.Pos0 
+		int posAbs = process.PC + process.getPartition().getPos0(); // PosAbs = PosRel + Part.Pos0 
 		Position pos = MM.getPosition(posAbs); 
+
+		//DEBUG START
+		System.out.println("Entrei em readInstruction! Executando processo: "+process.getId());
+		System.out.println("posAbsoluta: "+posAbs+" (PC: "+process.PC+"\tPos0: "+process.getPartition().getPos0()+")\nPosition["+posAbs+"] = " + pos.toString()+"\n");
+		//DEBUG FINISH
 		
 		switch(pos.OPCode) 
 		{			
