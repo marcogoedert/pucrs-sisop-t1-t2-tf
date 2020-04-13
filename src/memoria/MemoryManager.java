@@ -15,11 +15,11 @@ public class MemoryManager {
         new Partition(6, 768, 895),
         new Partition(7, 896, 1023)
     };
+    private static int ocupied = 0;
     
     public class Partition{
 
         private int id, pos0, pos1;
-        private boolean using = false;
 
         public Partition(int id, int pos0, int pos1){
             this.id = id;
@@ -42,14 +42,14 @@ public class MemoryManager {
             return this.pos1;
         }
 
-        public boolean isUsing()
-        {
-            return this.using;
-        }
-
         public boolean isUsed()
         {
             return !(memory[this.pos0] == null);
+        }
+
+        public int compensate(int num)
+        {
+            return num + this.pos0;
         }
        
         public String getPartitionData(){
@@ -72,14 +72,10 @@ public class MemoryManager {
         @Override
         public String toString()
         {
-            StringBuilder sb = new StringBuilder("Partition Id: ").append(this.id).
-                                          append("\tpos0: ").append(this.pos0).
-                                          append("\tpos1: ").append(this.pos1).
-                                          append("\tusing: ").append(this.using).
+            StringBuilder sb = new StringBuilder("Partition ").append(this.id).append(": ").
                                           append("\tused: ").append(this.isUsed()).append("\n");
             return sb.toString();
         }
-
     }
     
     public Position getPosition(int pos){
@@ -94,13 +90,17 @@ public class MemoryManager {
     private Partition getPartition(){
         for(int i = 0; i < partitions.length; i++){
             Partition p = partitions[i];
-            if (!p.using)
+            if (!p.isUsed())
             {
-                p.using = true;
+                ocupied++;
                 return p;
             }
         }
         return null;
+    }
+
+    public int getOcupiedPartitions(){
+        return ocupied;
     }
 
     // Pega uma particao e partindo de 'pos0' adiciona um programa
@@ -118,10 +118,7 @@ public class MemoryManager {
     public void desalocar(){
         // Reseta memória
         memory = new Position[TAM];
-
-        // Reseta status de todas partições
-        for(int i=0; i<partitions.length; i++)
-            partitions[i].using = false;
+        ocupied = 0;
     }
 
 	public String printByPartition(){

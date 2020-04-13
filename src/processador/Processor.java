@@ -24,6 +24,7 @@ public class Processor{
 		{
 			this.id = id;
 			this.partition = MM.alocar(p);
+			this.PC = this.partition.getPos0();
 		}
 
 		public int getId()
@@ -71,32 +72,25 @@ public class Processor{
 	}
 
 	public void main(){
-		//DEBUG START
-		System.out.println("Entrei na main!\tProcessos na fila: " + processes.size());
-		//DEBUG FINISH
+		
 		int timeSlice = 20;
-		while(!processes.isEmpty()){
-			Process p = processes.peek();
-			//DEBUG START
-			System.out.println("Executando processo: \n" + p.toString());
-			//DEBUG FINISH
-			for(int i = 0; i < timeSlice; i++)
-			{
-				//DEBUG START
-				System.out.println("timeSlice counter = "+i);
-				//DEBUG FINISH
-				readInstruction(p);
-				if (!p.executing)
-					break;
+		if (!processes.isEmpty()){
+			System.out.println("Processos na fila: " + processes.size());
+			while(!processes.isEmpty()){
+				Process p = processes.peek();
+				for(int i = 0; i < timeSlice; i++)
+				{
+					readInstruction(p);
+					if (!p.executing)
+						break;
+				}
+	
+				if(p.executing)
+					processes.add(processes.poll());
+				else			
+					processes.remove();
 			}
-
-			if(p.executing)
-				processes.add(processes.poll());
-			else			
-				processes.remove();
-		}
-		System.out.println(MM.printByPartition());
-		MM.desalocar();
+		} else System.out.println("Nenhum novo processo a ser executado.");
 	}
 
 	public void runFibonacci10()
@@ -106,7 +100,7 @@ public class Processor{
 		Process process = new Process(id, program);
 		processes.add(process);
 		//DEBUG START
-		System.out.println("Entrei em runFibonacci10!\n"+process.toString()+"\nProcesses length: "+processes.size()+"\n");
+		System.out.println("Iniciei o processo "+id+": runFibonacci10.");
 		//DEBUG FINISH
 	}
 
@@ -117,7 +111,7 @@ public class Processor{
 		Process process = new Process(id, program);
 		processes.add(process);
 		//DEBUG START
-		System.out.println("Entrei em runFibonacciN!\n"+process.toString()+"\nProcesses length: "+processes.size()+"\n");
+		System.out.println("Iniciei o processo "+id+": runFibonacciN.");
 		//DEBUG FINISH
 	}	
 	
@@ -128,7 +122,7 @@ public class Processor{
 		Process process = new Process(id, program);
 		processes.add(process);
 		//DEBUG START
-		System.out.println("Entrei em runFatorial!\n"+process.toString()+"\nProcesses length: "+processes.size()+"\n");
+		System.out.println("Iniciei o processo "+id+": runFatorial.");
 		//DEBUG FINISH
 	}
 	
@@ -137,15 +131,8 @@ public class Processor{
 	}
 	
 	private void readInstruction(Process process)
-	{		
-		int posAbs = process.PC + process.getPartition().getPos0(); // PosAbs = PosRel + Part.Pos0 
-		Position pos = MM.getPosition(posAbs); 
-
-		//DEBUG START
-		System.out.println("Entrei em readInstruction! Executando processo: "+process.getId());
-		System.out.println("posAbsoluta: "+posAbs+" (PC: "+process.PC+"\tPos0: "+process.getPartition().getPos0()+")\nPosition["+posAbs+"] = " + pos.toString()+"\n");
-		//DEBUG FINISH
-		
+	{		 
+		Position pos = MM.getPosition(process.PC); 
 		switch(pos.OPCode) 
 		{			
 		case "STOP":
@@ -179,8 +166,7 @@ public class Processor{
 			LDD(pos.r1, pos.num);
 			break;
 		case "STD":
-		    int num = pos.num + process.getPartition().getPos0();
-			STD(num, pos.r2);
+			STD(pos.num, pos.r2);
 			break;
 		case "ADD":
 			ADD(pos.r1, pos.r2);
@@ -224,102 +210,133 @@ public class Processor{
 	}
 
 	public void JMP(int k){
-        processes.peek().PC = k;
+		Process p = processes.peek();
+		int num = p.getPartition().compensate(k);
+        processes.peek().PC = num;
 	}
 
     public void JMPI(String Rs){
-        int aux = getRegistrador(Rs);
-        processes.peek().PC = processes.peek().regs[aux];
+		Process p = processes.peek();
+		int rs = getRegistrador(Rs);
+		rs = p.getPartition().compensate(p.regs[rs]);
+        p.PC = p.regs[rs];
     }
 
     public void JMPIG(String Rs, String Rc){
-        int aux1 = getRegistrador(Rc);
-        int aux2 = getRegistrador(Rs);
-
-        if (processes.peek().regs[aux1] > 0){
-            processes.peek().PC = processes.peek().regs[aux2];
+		// if Rc > 0 then PC <- Rs
+		// else PC <- PC + 1
+		Process p = processes.peek();
+		int rc = getRegistrador(Rc);
+		int rs = getRegistrador(Rs);
+		
+		rs = p.getPartition().compensate(p.regs[rs]);
+		
+        if (p.regs[rc] > 0){
+            p.PC = rs;
         }
     }
 
     public void JMPIL(String Rs, String Rc){
-        int aux1 = getRegistrador(Rc);
-        int aux2 = getRegistrador(Rs);
+		Process p = processes.peek();
+		int rc = getRegistrador(Rc);
+		int rs = getRegistrador(Rs);
+		rs = p.getPartition().compensate(p.regs[rs]);
 
-        if (processes.peek().regs[aux1] < 0){
-            processes.peek().PC = processes.peek().regs[aux2];
+        if (p.regs[rc] < 0){
+            p.PC = rs;
         }
 	}
 	
 	public void JMPIE(String Rs, String Rc){
-        int aux1 = getRegistrador(Rc);
-        int aux2 = getRegistrador(Rs);
+		Process p = processes.peek();
+		int rc = getRegistrador(Rc);
+		int rs = getRegistrador(Rs);
+		rs = p.getPartition().compensate(p.regs[rs]);
 
-        if (processes.peek().regs[aux1] == 0){
-            processes.peek().PC = processes.peek().regs[aux2];
+        if (p.regs[rc] == 0){
+            p.PC = rs;
         }
 	}
 	
 	public void ADDI(String Rd, int k)
 	{
+		Process p = processes.peek();
 		int aux = getRegistrador(Rd);
-		processes.peek().regs[aux] += k;
+		p.regs[aux] += k;
 	}
 
 	public void SUBI(String Rd, int k)
 	{
+		Process p = processes.peek();
 		int aux = getRegistrador(Rd);
-		processes.peek().regs[aux] -= k;
+		p.regs[aux] -= k;
 	}
 
 	public void LDI(String Rd, int k) 
 	{
+		Process p = processes.peek();
 		int aux = getRegistrador(Rd);
-		processes.peek().regs[aux] = k;
+		p.regs[aux] = k;
 	}
 	
 	private void LDD(String Rd, int n)
 	{
-		processes.peek().regs[getRegistrador(Rd)] = MM.getPosition(n).num;
+		Process p = processes.peek();
+		n = p.getPartition().compensate(n);
+		p.regs[getRegistrador(Rd)] = MM.getPosition(n).num;
 	}
 	
 	private void STD(int n, String Rs)
     {
-		MM.setPosition(n, new Position(processes.peek().regs[getRegistrador(Rs)]));
+		Process p = processes.peek();
+		n = p.getPartition().compensate(n);		
+		MM.setPosition(n, new Position(p.regs[getRegistrador(Rs)]));
     }
 
 	public void ADD(String Rd, String Rs)
 	{
+		Process p = processes.peek();
 		int aux_d = getRegistrador(Rd);
 		int aux_s = getRegistrador(Rs);
-		processes.peek().regs[aux_d] += processes.peek().regs[aux_s];
+		p.regs[aux_d] += p.regs[aux_s];
 	}
 
 	public void SUB(String Rd, String Rs)
 	{
+		Process p = processes.peek();
 		int aux_d = getRegistrador(Rd);
 		int aux_s = getRegistrador(Rs);
-		processes.peek().regs[aux_d] -= processes.peek().regs[aux_s];
+		p.regs[aux_d] -= p.regs[aux_s];
 	}
 
 	public void MULT(String Rd, String Rs)
 	{
+		Process p = processes.peek();
 		int aux_d = getRegistrador(Rd);
 		int aux_s = getRegistrador(Rs);
-		processes.peek().regs[aux_d] *= processes.peek().regs[aux_s];
+		p.regs[aux_d] *= p.regs[aux_s];
 	}
 	
 	private void LDX(String Rd, String Rs)
 	{
-		int aux_d = getRegistrador(Rd);
-		int aux_s = getRegistrador(Rs);
-		processes.peek().regs[aux_d] = MM.getPosition(processes.peek().regs[aux_s]).num;
+		Process p = processes.peek();
+		int rd = getRegistrador(Rd);
+		int rs = getRegistrador(Rs);
+
+		rs = p.getPartition().compensate(rs);
+
+		p.regs[rd] = MM.getPosition(rs).num;
 	}
 	
 	private void STX(String Rd, String Rs)
-    {
-        int aux_d = getRegistrador(Rd);
-		int aux_s = getRegistrador(Rs);
-		MM.setPosition(processes.peek().regs[aux_d], new Position(processes.peek().regs[aux_s]));
+    {	
+		Process p = processes.peek();
+        int rd = getRegistrador(Rd);
+		int rs = getRegistrador(Rs);
+
+		rd = p.getPartition().compensate(p.regs[rd]);		
+
+		MM.setPosition(rd, new Position(p.regs[rs]));
     }
 	
 	private void SWAP(String Rd, String Rs)
@@ -327,5 +344,4 @@ public class Processor{
 		// Rd7 <- Rd3, Rd6 <- Rd2,
 		// Rd5 <- Rd1, Rd4 <- Rd0
 	}
-
 }
