@@ -16,17 +16,19 @@ public class ProcessManager {
     public ProcessManager() {
         ESC.start(); // Inicializa escalonador que se mantem bloqueado por padrao
     }
-
-    public static void endProcess(PCB process)
+    
+    public static void endProcess(PCB process, boolean print)
     {
         Partition p = process.partition;
-        
+
+        if (print) {
         //DEBUG START
         System.out.println("GP: Resultado PCB "+process.id+":\n"+p.getPartitionData());
         //DEBUG END
+        }
 
         p.format(); // formata particao da memoria
-    } 
+    }
 
     public static void addProcess(int n)
 	{
@@ -44,7 +46,11 @@ public class ProcessManager {
             }
             
             PCB pcb = new PCB(id, program); // cria PCB solicitado pelo usuario
-            
+            if (!CPU.isInterrupted)
+            {
+                CPU.isInterrupted = true;
+                CPU.trap = true;
+            }
             // DEBUG START
             System.out.println("GP: Criei o PCB "+id+". Adicionando na FP...");
             //DEBUG END

@@ -7,11 +7,10 @@ import java.util.concurrent.Semaphore;
 public class ReadyQueue {
  
     private static Queue<PCB> filaProntos = new LinkedList<PCB>();
-    
-    private static Semaphore semaEscalonador = new Semaphore(0);           // semaforo do escalonador
-    private static Semaphore mutex = new Semaphore(1);	    // para exclusao mutua 
-    //private Semaphore semaCPU = new Semaphore(0);
-    //private Semaphore mutex = new Semaphore(1); 
+    public static Queue<PCB> filaBloqueados = new LinkedList<PCB>();
+
+    private static Semaphore semaEscalonador = new Semaphore(0);    // semaforo do escalonador
+    private static Semaphore mutex = new Semaphore(1);              // exclusao mutua 
 
     public ReadyQueue () {}
 

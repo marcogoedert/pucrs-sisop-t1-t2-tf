@@ -6,8 +6,11 @@ public class CPU extends Thread {
 
     static PCB pcb = null;         
     private static  MemoryManager MM = new MemoryManager(); // gerenciador de memória
-    private static boolean timeOver = false;  // flag que Timer usa para controlar quantum do escalonador
-    public static boolean isInterrupted = false;  // flag que Timer usa para ativar o escalonador
+	private static boolean timeOver = false;  	// flag que Timer usa para controlar quantum do escalonador
+	private static boolean divZero = false;  	// flag caso CPU tente arithmetic exception
+	private static boolean deniedMemoryAccess = false; // flag caso CPU tente acesso indevido
+	public static boolean trap = false;// flag de interrupção de i/o 
+    public static boolean isInterrupted = false;// flag de interrupção generica 
     
     public CPU(){
         
@@ -56,16 +59,27 @@ public class CPU extends Thread {
     //verifica origem da interrupção e chama a rotina de tratamento adequeada 
     private void checkInterruption()
     {
-        ReadyQueue FP = new ReadyQueue();
+		ReadyQueue FP = new ReadyQueue();
+		BlockedQueue FB = new BlockedQueue();
 
         if (!pcb.executing) { // equivalente ao "ROT TRAT ***""
-            System.out.println("\t\t\tCPU: Fim do PCB. Pedindo ao GP para desalocar da memoria...");
-            ProcessManager.endProcess(pcb); //desaloca PCB
+            System.out.println("\t\t\tCPU: Fim do PCB "+pcb.id+". Pedindo ao GP para desalocar da memoria...");
+            ProcessManager.endProcess(pcb, true); //desaloca PCB exibindo resultado
         }
         else if (timeOver) {// equivalente ao "ROT TRAT TIMER"
             System.out.println("\t\t\tCPU: Time Over. Adicionando PCB ao fim da FP...");
             FP.add(pcb);    //PCB retorna pro final da FP
-        }
+		}
+		else if (divZero || deniedMemoryAccess) 
+		{
+			System.out.println("\t\t\tCPU: Erro no PCB "+pcb.id+". Pedindo ao GP para desalocar da memoria...");
+            ProcessManager.endProcess(pcb, false); //desaloca PCB sem exibir resultado
+		}
+		else if (trap) 
+		{
+			System.out.println("\t\t\tCPU: I/O durante PCB "+pcb.id+". Adicionando PCB a FB...");	
+			FB.add(pcb);	// PCB vai para fila de bloqueados
+		}
         else 
         {
             System.err.println("\t\t\tCPU: INTERRUPCAO DESCONHECIDA.");
@@ -73,75 +87,84 @@ public class CPU extends Thread {
         }
 
         // reseta flags da cpu e tenta proximo escalonamento
-        timeOver = false;
-        isInterrupted = false;
-        System.out.println("\t\t\tCPU: Flags resetadas!\ttimeOver = "+timeOver+"\tisInterrupted = "+isInterrupted+
-                            "\tPedindo proximo ESC ao GP...");
+        timeOver = isInterrupted = divZero = deniedMemoryAccess = trap = false;
+        System.out.println("\t\t\tCPU: Flags resetadas!\tPedindo proximo ESC ao GP...");
 
         ProcessManager.tryReleaseScheduler();
     }
     
 	private void readInstruction(PCB process)
 	{		 
-		Position pos = MM.getPosition(process.PC); 
-		switch(pos.OPCode) 
-		{			
-		case "STOP":
-			process.executing = false;
-			break;
-		case "JMP":
-			JMP(pos.num);
-			break;
-		case "JMPI":
-			JMPI(pos.r1);
-			break;
-		case "JMPIG":
-			JMPIG(pos.r1, pos.r2);
-			break;
-		case "JMPIL":
-			JMPIL(pos.r1, pos.r2);
-			break;
-		case "JMPIE":
-			JMPIE(pos.r1, pos.r2);
-			break;
-		case "ADDI":
-			ADDI(pos.r1, pos.num);
-			break;
-		case "SUBI":
-			SUBI(pos.r1, pos.num);
-			break;
-		case "LDI":
-			LDI(pos.r1, pos.num);
-			break;
-		case "LDD":
-			LDD(pos.r1, pos.num);
-			break;
-		case "STD":
-			STD(pos.num, pos.r2);
-			break;
-		case "ADD":
-			ADD(pos.r1, pos.r2);
-			break;
-		case "SUB":
-			SUB(pos.r1, pos.r2);
-			break;
-		case "MULT":
-			MULT(pos.r1, pos.r2);
-			break;
-		case "LDX":
-			LDX(pos.r1, pos.r2);
-			break;
-		case "STX":
-			STX(pos.r1, pos.r2);
-			break;
-		case "SWAP":
-			SWAP(pos.r1, pos.r2);
-			break;
-		default:
-			System.err.println("Invalid Operation: " + pos.label);
-			System.exit(1);
+		try {
+			if (process.PC > process.partition.getPos1())
+				throw new OutOfMemoryError();
+
+			Position pos = MM.getPosition(process.PC); 
+			switch(pos.OPCode) 
+			{			
+			case "STOP":
+				process.executing = false;
+				break;
+			case "JMP":
+				JMP(pos.num);
+				break;
+			case "JMPI":
+				JMPI(pos.r1);
+				break;
+			case "JMPIG":
+				JMPIG(pos.r1, pos.r2);
+				break;
+			case "JMPIL":
+				JMPIL(pos.r1, pos.r2);
+				break;
+			case "JMPIE":
+				JMPIE(pos.r1, pos.r2);
+				break;
+			case "ADDI":
+				ADDI(pos.r1, pos.num);
+				break;
+			case "SUBI":
+				SUBI(pos.r1, pos.num);
+				break;
+			case "LDI":
+				LDI(pos.r1, pos.num);
+				break;
+			case "LDD":
+				LDD(pos.r1, pos.num);
+				break;
+			case "STD":
+				STD(pos.num, pos.r2);
+				break;
+			case "ADD":
+				ADD(pos.r1, pos.r2);
+				break;
+			case "SUB":
+				SUB(pos.r1, pos.r2);
+				break;
+			case "MULT":
+				MULT(pos.r1, pos.r2);
+				break;
+			case "LDX":
+				LDX(pos.r1, pos.r2);
+				break;
+			case "STX":
+				STX(pos.r1, pos.r2);
+				break;
+			case "SWAP":
+				SWAP(pos.r1, pos.r2);
+				break;
+			default:
+				System.err.println("Invalid Operation: " + pos.label);
+				System.exit(1);
+			}
+			process.PC++;
+		} catch (ArithmeticException ae) {
+			isInterrupted = true;
+			divZero = true;
+		} catch (OutOfMemoryError om) {
+			isInterrupted = true;
+			deniedMemoryAccess = true;
 		}
-		process.PC++;
 	}
 	
 	private static int getRegistrador(String registrador)
@@ -160,6 +183,7 @@ public class CPU extends Thread {
 		}
 	}
 
+	//#region cpu instructions
 	public void JMP(int k){
 		int num = pcb.getPartition().compensate(k);
         pcb.PC = num;
@@ -293,4 +317,5 @@ public class CPU extends Thread {
 		// Rd7 <- Rd3, Rd6 <- Rd2,
 		// Rd5 <- Rd1, Rd4 <- Rd0
 	}
+	//#endregion
 }
