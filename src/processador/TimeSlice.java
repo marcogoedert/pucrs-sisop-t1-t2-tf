@@ -2,7 +2,7 @@ package processador;
 
 public class TimeSlice extends Thread {
 
-    private static int waitTime = 500; // tempo de cada escalonamento em ms
+    private static int waitTime = 100; // tempo de cada escalonamento em ms
 
     public TimeSlice(){
 

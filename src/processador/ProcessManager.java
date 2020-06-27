@@ -68,7 +68,7 @@ public class ProcessManager {
             Scheduler.isExecuting = true;
             FP.releaseEscalonador();
         } else {
-            System.err.println("GP: ERRO ao tentar liberar escalonador ->FP size: "+FP.size()+
+            System.err.println("GP: Nao eh necessario startar ESC.\tFP size: "+FP.size()+
                                 "\tScheduler is executing: "+ Scheduler.isExecuting+"\n");
         }
     }
