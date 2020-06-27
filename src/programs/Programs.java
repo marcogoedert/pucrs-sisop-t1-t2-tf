@@ -2,9 +2,9 @@ package programs;
 
 import processador.Position;;
 
-public class Program {
-	
-	private static Position[] program1 = new Position[] {
+public class Programs {
+		
+	private static Position[] fibonacci10 = new Position[] {
 		new Position("LDI", "r1", 0),
 		new Position("STD", 50, "r1"),
 		new Position("LDI", "r2", 1),
@@ -24,7 +24,7 @@ public class Program {
 		new Position("STOP")
 	};
 
-	private static Position[] program2 = new Position[] {
+	private static Position[] fibonaccin = new Position[] {
 		new Position("LDI", "r4", 20), 		
 		new Position("LDI", "r5", 23),		
 		new Position("JMPIL", "r5", "r4"),	
@@ -52,7 +52,7 @@ public class Program {
 		new Position("STOP")				
 	};
 	
-	private static Position[] program3 = new Position[] {
+	private static Position[] fatorial = new Position[] {
 		new Position("LDI", "r0", 5), 			
 		new Position("LDI", "r5", 11), 
 		new Position("JMPIL", "r5", "r0"), 
@@ -72,23 +72,23 @@ public class Program {
 	
 	private static Position[] program4;
 	
-	public Program() {
+	public Programs() {
 	
 	}
 	
-	public Position[] fibonacci10() {
-		return program1;
+	public static Position[] getFibonacci10() {
+		return fibonacci10;
 	}
 	
-	public Position[] fibonaccin() {
-		return program2;
+	public static Position[] getFibonacciN() {
+		return fibonaccin;
 	}
 	
-	public Position[] fatorial() {
-		return program3;
+	public static Position[] getFatorial() {
+		return fatorial;
 	}
 	
-	public Position[] bubblesort() {
+	public static Position[] getBubblesort() {
 		return program4;
 	}
 }

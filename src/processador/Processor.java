@@ -1,136 +1,46 @@
 package processador;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 import memoria.MemoryManager;
-import memoria.MemoryManager.*;
-import programs.Program;
 
 public class Processor{
 
-	private MemoryManager MM = new MemoryManager();
-	private Queue<Process> processes = new LinkedList<Process>();
-
-	public class Process
-	{
-		// Process Control Block
-		private int id, PC = 0;
-		private int[] regs = new int[8];
-		private boolean executing = true;
-		private Partition partition = null;
-
-		public Process(int id, Position p[])
-		{
-			this.id = id;
-			this.partition = MM.alocar(p);
-			this.PC = this.partition.getPos0();
-		}
-
-		public int getId()
-		{
-            return this.id;
-		}
-
-		public String getRegs()
-		{
-			StringBuilder sb = new StringBuilder();
-
-			sb.append("R0: ").append(regs[0]).
-			 append("\tR1: ").append(regs[1]).
-			 append("\tR2: ").append(regs[2]).
-			 append("\tR3: ").append(regs[3]).
-			 append("\tR4: ").append(regs[4]).
-			 append("\tR5: ").append(regs[5]).
-			 append("\tR6: ").append(regs[6]).
-			 append("\tR7: ").append(regs[7]);
-
-			return sb.toString();
-		}
-
-		public boolean isExecuting(){
-			return this.executing;
-		}
-
-		public Partition getPartition(){
-			return this.partition;
-		}
-
-		@Override
-		public String toString(){
-			StringBuilder sb = new StringBuilder("PCB Id: ").append(this.id).
-										  append("\tExecuting: ").append(this.executing).
-										  append("\n").append(this.partition.toString()).
-										  append(this.getRegs()).append("\n");
-			return sb.toString();
-		}
-	}
-
-	public Processor()
-	{
+	private MemoryManager MM = new MemoryManager(); // gerenciador de memória
+	private ReadyQueue FP = new ReadyQueue(); 		// fila de prontos
+	PCB pcb = null;
 		
-	}
+	public Processor(){}
 
 	public void main(){
 		
 		int timeSlice = 20;
-		if (!processes.isEmpty()){
-			System.out.println("Processos na fila: " + processes.size());
-			while(!processes.isEmpty()){
-				Process p = processes.peek();
+		if (!FP.isEmpty()){
+			System.out.println("Processos na fila: " + FP.size());
+			while(!FP.isEmpty()){
+				// Pega processo da fila de prontos
+				PCB p = FP.peek();
+				// Executa processo durante seu time slice
 				for(int i = 0; i < timeSlice; i++)
 				{
 					readInstruction(p);
 					if (!p.executing)
 						break;
 				}
-	
-				if(p.executing)
-					processes.add(processes.poll());
-				else			
-					processes.remove();
+				
+				if (p.executing)
+					FP.add(FP.poll());
+				else
+				{			
+					FP.remove(); // QUEM DEVE REMOVER EH O GP
+					// DEBUG START
+					System.out.println(p.partition.getPartitionData());
+					// DEBUG END
+					p.partition.format();
+				}
 			}
 		} else System.out.println("Nenhum novo processo a ser executado.");
 	}
 
-	public void runFibonacci10()
-	{
-		int id = processes.size();
-		Position program[] = new Program().fibonacci10();
-		Process process = new Process(id, program);
-		processes.add(process);
-		//DEBUG START
-		System.out.println("Iniciei o processo "+id+": runFibonacci10.");
-		//DEBUG FINISH
-	}
-
-	public void runFibonacciN()
-	{
-		int id = processes.size();
-		Position program[] = new Program().fibonaccin();
-		Process process = new Process(id, program);
-		processes.add(process);
-		//DEBUG START
-		System.out.println("Iniciei o processo "+id+": runFibonacciN.");
-		//DEBUG FINISH
-	}	
-	
-	public void runFatorial()
-	{
-		int id = processes.size();
-		Position program[] = new Program().fatorial();
-		Process process = new Process(id, program);
-		processes.add(process);
-		//DEBUG START
-		System.out.println("Iniciei o processo "+id+": runFatorial.");
-		//DEBUG FINISH
-	}
-	
-	public void runBubbleSort()
-	{
-	}
-	
-	private void readInstruction(Process process)
+	private void readInstruction(PCB process)
 	{		 
 		Position pos = MM.getPosition(process.PC); 
 		switch(pos.OPCode) 
@@ -210,13 +120,13 @@ public class Processor{
 	}
 
 	public void JMP(int k){
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int num = p.getPartition().compensate(k);
-        processes.peek().PC = num;
+        FP.peek().PC = num;
 	}
 
     public void JMPI(String Rs){
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int rs = getRegistrador(Rs);
 		rs = p.getPartition().compensate(p.regs[rs]);
         p.PC = p.regs[rs];
@@ -225,7 +135,7 @@ public class Processor{
     public void JMPIG(String Rs, String Rc){
 		// if Rc > 0 then PC <- Rs
 		// else PC <- PC + 1
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int rc = getRegistrador(Rc);
 		int rs = getRegistrador(Rs);
 		
@@ -237,7 +147,7 @@ public class Processor{
     }
 
     public void JMPIL(String Rs, String Rc){
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int rc = getRegistrador(Rc);
 		int rs = getRegistrador(Rs);
 		rs = p.getPartition().compensate(p.regs[rs]);
@@ -248,7 +158,7 @@ public class Processor{
 	}
 	
 	public void JMPIE(String Rs, String Rc){
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int rc = getRegistrador(Rc);
 		int rs = getRegistrador(Rs);
 		rs = p.getPartition().compensate(p.regs[rs]);
@@ -260,42 +170,42 @@ public class Processor{
 	
 	public void ADDI(String Rd, int k)
 	{
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int aux = getRegistrador(Rd);
 		p.regs[aux] += k;
 	}
 
 	public void SUBI(String Rd, int k)
 	{
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int aux = getRegistrador(Rd);
 		p.regs[aux] -= k;
 	}
 
 	public void LDI(String Rd, int k) 
 	{
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int aux = getRegistrador(Rd);
 		p.regs[aux] = k;
 	}
 	
 	private void LDD(String Rd, int n)
 	{
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		n = p.getPartition().compensate(n);
 		p.regs[getRegistrador(Rd)] = MM.getPosition(n).num;
 	}
 	
 	private void STD(int n, String Rs)
     {
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		n = p.getPartition().compensate(n);		
 		MM.setPosition(n, new Position(p.regs[getRegistrador(Rs)]));
     }
 
 	public void ADD(String Rd, String Rs)
 	{
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int aux_d = getRegistrador(Rd);
 		int aux_s = getRegistrador(Rs);
 		p.regs[aux_d] += p.regs[aux_s];
@@ -303,7 +213,7 @@ public class Processor{
 
 	public void SUB(String Rd, String Rs)
 	{
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int aux_d = getRegistrador(Rd);
 		int aux_s = getRegistrador(Rs);
 		p.regs[aux_d] -= p.regs[aux_s];
@@ -311,7 +221,7 @@ public class Processor{
 
 	public void MULT(String Rd, String Rs)
 	{
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int aux_d = getRegistrador(Rd);
 		int aux_s = getRegistrador(Rs);
 		p.regs[aux_d] *= p.regs[aux_s];
@@ -319,7 +229,7 @@ public class Processor{
 	
 	private void LDX(String Rd, String Rs)
 	{
-		Process p = processes.peek();
+		PCB p = FP.peek();
 		int rd = getRegistrador(Rd);
 		int rs = getRegistrador(Rs);
 
@@ -330,7 +240,7 @@ public class Processor{
 	
 	private void STX(String Rd, String Rs)
     {	
-		Process p = processes.peek();
+		PCB p = FP.peek();
         int rd = getRegistrador(Rd);
 		int rs = getRegistrador(Rs);
 

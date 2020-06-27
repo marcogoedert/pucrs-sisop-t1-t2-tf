@@ -27,30 +27,15 @@ public class MemoryManager {
             this.pos1 = pos1;
         }
 
-        public int getId()
-        {
-            return this.id;
-        }
+        public int getId() { return this.id; }
 
-        public int getPos0()
-        {
-            return this.pos0;
-        }
+        public int getPos0() { return this.pos0; }
 
-        public int getPos1()
-        {
-            return this.pos1;
-        }
+        public int getPos1() { return this.pos1; }
 
-        public boolean isUsed()
-        {
-            return !(memory[this.pos0] == null);
-        }
+        public boolean isUsed() { return !(memory[this.pos0] == null); }
 
-        public int compensate(int num)
-        {
-            return num + this.pos0;
-        }
+        public int compensate(int num) { return num + this.pos0; }
        
         public String getPartitionData(){
             StringBuilder sb = new StringBuilder();
@@ -69,6 +54,13 @@ public class MemoryManager {
             return sb.toString();
         }
 
+        public void format()
+        {
+            for(int i = this.pos0; i <= this.pos1; i++)
+                memory[i] = null;
+            --ocupied;
+        }
+
         @Override
         public String toString()
         {
@@ -78,13 +70,9 @@ public class MemoryManager {
         }
     }
     
-    public Position getPosition(int pos){
-        return memory[pos];
-    }
+    public Position getPosition(int pos){ return memory[pos]; }
 
-    public void setPosition(int n, Position pos){
-        memory[n] = pos;        
-    }
+    public void setPosition(int n, Position pos){ memory[n] = pos; }
 
     // Procura uma partição livre da memória, marca sua flag 'using' como true e a retorna.
     private Partition getPartition(){
@@ -99,9 +87,7 @@ public class MemoryManager {
         return null;
     }
 
-    public int getOcupiedPartitions(){
-        return ocupied;
-    }
+    public int getOcupiedPartitions(){ return ocupied; }
 
     // Pega uma particao e partindo de 'pos0' adiciona um programa
     public Partition alocar(Position[] program)
@@ -113,12 +99,6 @@ public class MemoryManager {
             memory[partition.pos0+i] = program[i];
             
         return partition;
-    }
-
-    public void desalocar(){
-        // Reseta memória
-        memory = new Position[TAM];
-        ocupied = 0;
     }
 
 	public String printByPartition(){
