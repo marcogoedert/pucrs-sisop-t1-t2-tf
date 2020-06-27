@@ -61,15 +61,15 @@ public class ProcessManager {
         if (FP.size() > 0 && !Scheduler.isExecuting)
         {
             // DEBUG START
-            System.out.println("GP: Liberando escalonador...");
+            System.out.println("GP: Pedindo release do escalonador a FP...");
             //DEBUG END
 
             // Libera semaforo e flag do ESC para passar PCBs pra CPU 
             Scheduler.isExecuting = true;
             FP.releaseEscalonador();
         } else {
-            System.err.println("GP: ERRO ao tentar liberar escalonador:\nFP size: "+FP.size()+
-                                "\tScheduler is executing: "+ Scheduler.isExecuting);
+            System.err.println("GP: ERRO ao tentar liberar escalonador ->FP size: "+FP.size()+
+                                "\tScheduler is executing: "+ Scheduler.isExecuting+"\n");
         }
     }
 
@@ -84,7 +84,7 @@ public class ProcessManager {
         case "-1":
             Shell.closed = true;
             System.out.println("Good bye.");
-            break;
+            System.exit(0);
         default: 
             System.err.print("Escolha um programa existente!\n");
         }

@@ -7,7 +7,7 @@ public class CPU extends Thread {
     static PCB pcb = null;         
     private static  MemoryManager MM = new MemoryManager(); // gerenciador de memória
     private static boolean timeOver = false;  // flag que Timer usa para controlar quantum do escalonador
-    private static boolean isInterrupted = false;  // flag que Timer usa para ativar o escalonador
+    public static boolean isInterrupted = false;  // flag que Timer usa para ativar o escalonador
     
     public CPU(){
         
@@ -16,10 +16,12 @@ public class CPU extends Thread {
     public void setPCB(PCB otherPcb) 
     { 
         //DEBUG START
-        System.out.println("CPU: Sincronizando com PCB "+otherPcb.id+"...");
+        System.out.println("\t\t\tCPU: Sincronizando com PCB "+otherPcb.id+"...");
         //DEBUG END
         pcb = otherPcb; 
     }
+
+	public boolean isInterrupted() { return isInterrupted; }
 
     public static void setInterruption(Boolean i) { isInterrupted = i; }
     
@@ -28,11 +30,12 @@ public class CPU extends Thread {
     public void run(){
         while (true)
         {
-            // primeiro ato deve bloquear a thread
+			isInterrupted = timeOver = false; // reseta flags
+			// primeiro ato deve bloquear a thread
             if (Scheduler.isCpuReleased()) //tenta verificar permissao do ESC; bloqueia se nao houver PCB no escalonador
             {
                 // DEBUG START
-                System.out.println("CPU: Executando PCB "+pcb.id+"...\tisInterrupted? "+isInterrupted);
+                System.out.println("\t\t\tCPU: Executando PCB "+pcb.id+"...\tisInterrupted? "+isInterrupted);
                 //DEBUG END
 
                 // executa instruções até ser interrompido pelo timer ou fim do processo
@@ -41,7 +44,7 @@ public class CPU extends Thread {
                     readInstruction(pcb);
 
                     if (!pcb.executing) {
-                        System.out.println("CPU: Fim do PCB "+pcb.id+"; interrompendo...");
+                        System.out.println("\t\t\tCPU: Fim do PCB "+pcb.id+"; interrompendo...");
                         isInterrupted = true;
                     }
                 }
@@ -56,24 +59,24 @@ public class CPU extends Thread {
         ReadyQueue FP = new ReadyQueue();
 
         if (!pcb.executing) { // equivalente ao "ROT TRAT ***""
-            System.out.println("CPU: Fim do PCB. Pedindo ao GP para desalocar da memoria...");
+            System.out.println("\t\t\tCPU: Fim do PCB. Pedindo ao GP para desalocar da memoria...");
             ProcessManager.endProcess(pcb); //desaloca PCB
         }
         else if (timeOver) {// equivalente ao "ROT TRAT TIMER"
-            System.out.println("CPU: Time Over. Adicionando PCB ao fim da FP...");
+            System.out.println("\t\t\tCPU: Time Over. Adicionando PCB ao fim da FP...");
             FP.add(pcb);    //PCB retorna pro final da FP
         }
         else 
         {
-            System.err.println("CPU: INTERRUPCAO DESCONHECIDA.");
+            System.err.println("\t\t\tCPU: INTERRUPCAO DESCONHECIDA.");
             System.exit(1);
         }
 
         // reseta flags da cpu e tenta proximo escalonamento
         timeOver = false;
         isInterrupted = false;
-        System.out.println("CPU: Flags resetadas!\ttimeOver = "+timeOver+"\tisInterrupted = "+isInterrupted+
-                            "\tTentando proximo escalonamento...");
+        System.out.println("\t\t\tCPU: Flags resetadas!\ttimeOver = "+timeOver+"\tisInterrupted = "+isInterrupted+
+                            "\tPedindo proximo ESC ao GP...");
 
         ProcessManager.tryReleaseScheduler();
     }

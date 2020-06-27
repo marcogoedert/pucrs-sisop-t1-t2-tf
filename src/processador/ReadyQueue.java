@@ -20,7 +20,7 @@ public class ReadyQueue {
             mutex.acquire();
         }  catch (InterruptedException ie) {} 
 
-        System.out.println("FP: Adicionando PCB "+p.id+"na FP...");
+        System.out.println("\tFP: Adicionando PCB "+p.id+" na FP...");
         filaProntos.add(p); 
         
         mutex.release();
@@ -41,19 +41,18 @@ public class ReadyQueue {
             semaEscalonador.acquire();
             mutex.acquire();
         }  catch (InterruptedException ie) {} 
-        
-        //DEBUG START
-        System.out.println("FP: Poll de 1 PCB para o ESC...");
-        //DEBUG END
 
         // Tira o primeiro PCB da FP, libera a MUTEX e retorna PCB para ESC
         PCB nextPCB = filaProntos.poll();
+        //DEBUG START
+        System.out.println("\tFP: Fazendo poll do prox. PCB "+nextPCB.id+" para o ESC...");
+        //DEBUG END
         mutex.release();
         return nextPCB;
     }
 
     public void releaseEscalonador(){ 
-        System.out.println("FP: Liberando escalonador...");
+        System.out.println("\tFP: Liberando escalonador...");
         semaEscalonador.release(); //+1 crédito p/ escalonador após add PCB na FP
     }
 

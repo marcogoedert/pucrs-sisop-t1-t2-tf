@@ -28,20 +28,20 @@ public class Scheduler extends Thread
             nextPCB = FP.poll(); //tenta remover 1 PCB da fila de prontos; bloqueia se nao houver PCBs na fila
             
             // DEBUG START
-            System.out.println("ESCALONADOR: Adicionando PCB "+nextPCB.getId()+" a CPU...");
+            System.out.println("\t\tESCALONADOR: Adicionando PCB "+nextPCB.getId()+" a CPU...");
             //DEBUG END
 
             cpu.setPCB(nextPCB);
 
             // DEBUG START
-            System.out.println("ESCALONADOR: Liberando CPU e Timer...");
+            System.out.println("\t\tESCALONADOR: Liberando CPU e Timer...");
             //DEBUG END
 
             isExecuting = false;    //hiberna até a proxima chamada do GP
             semaCPU.release();      //libera +1 credito p/ cpu
             semaTimer.release();    //libera +1 credito p/ timer
 
-            System.out.println("ESCALONADOR: Hibernando...\tisExecuting: "+isExecuting);
+            System.out.println("\t\tESCALONADOR: Hibernando...\tisExecuting: "+isExecuting);
         }
     }
 
